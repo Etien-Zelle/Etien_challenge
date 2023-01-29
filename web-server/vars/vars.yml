@@ -1,0 +1,5 @@
+#The following variables for the web server's configuration passes ports on which webserver wwill listen on
+
+web_server_port: 80
+web_server_ssl_port: 443
+

@@ -1,0 +1,23 @@
+
+# tasks file for web-server
+# This "main.yml" file contain tasks that install and start the web server
+# This also contain task to copy the HTML file to the web server's document root
+
+- hosts: webservers
+   become: true
+   task:
+   - name: Install web server
+   package:
+     name: httpd
+     state: present
+
+ - name: Start web server
+   service:
+     name: httpd
+     state: started
+     enabled: yes
+ - name: Copy HTML file to document root
+   copy:
+     src: files/index.html
+     dest: /var/www/html/index.html
+

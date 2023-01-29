@@ -1,0 +1,24 @@
+# vars file for web-server
+# This tasks to configure the web server to listen on the appropriate ports and redirect all HTTP requests to HTTPS
+#All HTTP will be redirected to HTTPS
+- hosts: webservers
+   become: true
+   task:
+ - name: Update web server configuration
+   lineinfile:
+     dest: /etc/httpd/conf/httpd.conf
+     regexp: '^Listen.*'
+     line: 'Listen {{ web_server_port }}'
+
+ - name: Enable mod_rewrite
+   shell: a2enmod rewrite
+
+ - name: Redirect all HTTP requests to HTTPS
+   lineinfile:
+     dest: /etc/httpd/conf/httpd.conf
+     regexp: '^RewriteEngine.*'
+     line: 'RewriteEngine On'
+     insertbefore: '^RewriteRule.*'
+   lineinfile:
+     dest: /etc/http
+

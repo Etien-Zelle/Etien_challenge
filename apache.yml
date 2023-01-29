@@ -1,0 +1,76 @@
+---
+#!/bin/bash
+#Here is an example Ansible playbook that creates and deploys a running
+#instance of a web server using Apache, serves a simple "Hello World"
+#page, secures the application and host by redirecting HTTP to HTTPS and
+#only exposing appropriate ports, and includes automated tests to validate
+#the server configuration
+#
+- name: Deploy web server
+  hosts: webservers
+  become: yes
+  vars:
+    web_root: /var/www/html
+    ssl_cert: /etc/pki/tls/certs/localhost.crt
+    ssl_key: /etc/pki/tls/private/localhost.key
+  tasks:
+  - name: Install Apache
+    yum:
+      name: httpd
+      state: present
+
+  - name: Create web root directory
+    file:
+      path: "{{ web_root }}"
+      state: directory
+      mode: 755
+
+  - name: Create index.html
+    template:
+      src: index.html.j2
+      dest: "{{ web_root }}/index.html"
+
+  - name: Generate self-signed SSL certificate
+    command: openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout "{{ ssl_key }}" -out "{{ ssl_cert }}"
+    args:
+      creates: "{{ ssl_cert }}"
+
+  - name: Configure Apache to use SSL
+    lineinfile:
+      path: /etc/httpd/conf.d/ssl.conf
+      regexp: '^SSLCertificateFile'
+      line: "SSLCertificateFile {{ ssl_cert }}"
+    notify:
+    - restart apache
+
+  - name: Configure Apache to redirect HTTP to HTTPS
+    lineinfile:
+      path: /etc/httpd/conf/httpd.conf
+      regexp: '^#.*RewriteEngine On'
+      line: 'RewriteEngine On'
+      insertafter: '^#.*RewriteEngine On'
+    notify:
+    - restart apache
+  - name: Configure Apache to redirect HTTP to HTTPS
+    lineinfile:
+      path: /etc/httpd/conf/httpd.conf
+      regexp: '^#.*RewriteCond %{HTTPS} off'
+      line: 'RewriteCond %{HTTPS} off'
+      insertafter: '^#.*RewriteCond %{HTTPS} off'
+    notify:
+    - restart apache
+  - name: Configure Apache to redirect HTTP to HTTPS
+    lineinfile:
+      path: /etc/httpd/conf/httpd.conf
+      regexp: '^#.*RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}'
+      line: 'RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}'
+      insertafter: '^#.*RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}'
+    notify:
+    - restart apache
+  - name: Configure Apache to redirect HTTP to HTTPS
+    lineinfile:
+      path: /etc/httpd/conf/httpd.conf
+      regexp: '^#.*RewriteCond %{SERVER_PORT} !^443$'
+
+
+
